@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "googlemaps": "^0.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.1"
+  }
+}

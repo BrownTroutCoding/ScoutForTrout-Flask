@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %} 
+<!-- Main Header -->
+<section class="bg text-light text-center shadow" id="menu">
+    <div class="container p-5 bg">
+        <div class="row">
+            <div class="d-md-flexbg align-items-center justify-content-evenly">
+                <h1 class="col text-center">Welcome to Scout for Trout!</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- body -->
+<!-- buttons -->
+<div id="buttons">
+    <button class="btn-primary btn"><a href="{{ url_for('auth.signin') }}">Sign In</button></a>
+    <button class="btn-primary btn"><a href="{{ url_for('auth.signup') }}">Sign Up</button></a>
+</div>
+<!-- body -->
+<section class="text-center">
+    <div class="container p-5">
+        <div class="row">
+            <div class="d-flex align-items-center justify-content-center">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
