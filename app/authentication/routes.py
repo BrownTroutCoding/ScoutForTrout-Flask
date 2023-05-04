@@ -1,55 +1,54 @@
-# Security and protection of information is a crucial part of computer programming and web design. We need to make sure that the data we are working with is kept safe and secure, and that only people who are supposed to see it ever will.
-from forms import UserLoginForm
 from models import User, db, check_password_hash
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, request, jsonify
+from flask_login import login_user, logout_user, login_required
+from flask_login import current_user
+from werkzeug.security import generate_password_hash
 
-from flask_login import login_user, logout_user, LoginManager, current_user, login_required
 
-auth = Blueprint('auth',__name__,template_folder='auth_templates')
+auth = Blueprint('auth', __name__)
 
-@auth.route('/signup', methods=['GET','POST'])
+@auth.route('/signup', methods=['POST'])
 def signup():
-    form=UserLoginForm()
+    email = request.json['email']
+    password = request.json['password']
 
-    try:
-        if request.method == 'POST' and form.validate_on_submit():
-            email = form.email.data
-            password = form.password.data
+    user = User(email=email, password=password)
+    db.session.add(user)
+    db.session.commit()
 
-            user = User(email,password = password)
-            
-            db.session.add(user)
-            db.session.commit()
+    return jsonify({'message': 'User created successfully'})
 
-            flash(f'You have successfully created a user account. {email}', "User-created")
-            return redirect(url_for('site.home'))
-    except:
-        raise Exception("Invalid form data: Please check your form")
-
-    return render_template('sign_up.html', form=form)
-
-@auth.route('/signin', methods=['GET','POST'])
+@auth.route('/signin', methods=['POST'])
 def signin():
-    form = UserLoginForm()
-    
-    try:
-        if request.method == 'POST' and form.validate_on_submit():
-            email = form.email.data
-            password = form.password.data
+    email = request.json['email']
+    password = request.json['password']
 
-            logged_user = User.query.filter(User.email == email).first()
-            if logged_user and check_password_hash(logged_user.password,password):
-                login_user(logged_user)
-                flash('Login Successful','auth-success')
-                return redirect(url_for('site.profile'))
-            else:
-                flash('Login Failed','auth-failed')
-    except:
-        raise Exception('Invalid form data: Please check your form')
+    logged_user = User.query.filter(User.email == email).first()
+    if logged_user and check_password_hash(logged_user.password,password):
+        login_user(logged_user)
+        return jsonify({'message': 'Login Successful'})
+    else:
+        return jsonify({'message': 'Invalid email or password'})
 
-    return render_template('sign_in.html',form=form)
-
-@auth.route('/logout')
+@auth.route('/logout', methods=['POST'])
+@login_required
 def logout():
     logout_user()
-    return redirect(url_for('site.home'))
+    return jsonify({'message': 'Logout Successful'})
+
+@auth.route('/update', methods=['PUT'])
+@login_required
+def update():
+    logged_user = User.query.filter_by(id=current_user.id).first()
+    if not logged_user:
+        return jsonify({'message': 'User not found'})
+    
+    data = request.get_json()
+    logged_user.email = data.get('email', logged_user.email)
+    logged_user.password = generate_password_hash(data.get('password')) if data.get('password') else logged_user.password
+
+    db.session.commit()
+
+    return jsonify({'message': 'User updated successfully'})
+
+
