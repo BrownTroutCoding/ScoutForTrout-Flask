@@ -1,54 +1,57 @@
-from models import User, db, check_password_hash
-from flask import Blueprint, request, jsonify
-from flask_login import login_user, logout_user, login_required
-from flask_login import current_user
-from werkzeug.security import generate_password_hash
+from models import User, db
+from flask import Blueprint, request, jsonify, render_template
+from google.oauth2 import id_token
+from google.auth.transport import requests as g_requests
+import requests
 
 
-auth = Blueprint('auth', __name__)
+auth = Blueprint('auth', __name__, template_folder='auth_templates')
 
-@auth.route('/signup', methods=['POST'])
+# Fetch Google public keys
+response = requests.get('https://www.googleapis.com/oauth2/v3/certs')
+public_keys = response.json()
+
+@auth.route('/signup', methods=['GET', 'POST'])
 def signup():
-    email = request.json['email']
-    password = request.json['password']
+    if request.method == 'GET':
+        return render_template('sign_up.html')
 
-    user = User(email=email, password=password)
+    data = request.json
+    print(data)
+    email = data.get('email')
+    id_token_str = data.get('id_token')
+
+    if not email or not id_token_str:
+        return jsonify({'message': 'Email and ID token are required'}), 400
+
+    try:
+        # Verify the ID token
+        req = g_requests.Request()
+        decoded_token = id_token.verify_firebase_token(id_token_str, req)
+
+        # ID token is valid, extract the user's email
+        user_email = decoded_token['email']
+
+        if user_email != email:
+            raise ValueError('Email does not match ID token email.')
+
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
+    # Check if user already exists
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({'message': 'User already exists'}), 409
+
+    # Create new user and save ID token
+    user = User(email=email, id_token=id_token_str)
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({'message': 'User created successfully'})
-
-@auth.route('/signin', methods=['POST'])
-def signin():
-    email = request.json['email']
-    password = request.json['password']
-
-    logged_user = User.query.filter(User.email == email).first()
-    if logged_user and check_password_hash(logged_user.password,password):
-        login_user(logged_user)
-        return jsonify({'message': 'Login Successful'})
-    else:
-        return jsonify({'message': 'Invalid email or password'})
-
-@auth.route('/logout', methods=['POST'])
-@login_required
-def logout():
-    logout_user()
-    return jsonify({'message': 'Logout Successful'})
-
-@auth.route('/update', methods=['PUT'])
-@login_required
-def update():
-    logged_user = User.query.filter_by(id=current_user.id).first()
-    if not logged_user:
-        return jsonify({'message': 'User not found'})
-    
-    data = request.get_json()
-    logged_user.email = data.get('email', logged_user.email)
-    logged_user.password = generate_password_hash(data.get('password')) if data.get('password') else logged_user.password
-
-    db.session.commit()
-
-    return jsonify({'message': 'User updated successfully'})
+    return jsonify({'message': 'User created successfully'}), 201
 
 
+# simulate login route
+@auth.route('/simulate-login')
+def simulate_login():
+    return render_template('simulate_login.html')

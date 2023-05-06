@@ -12,7 +12,6 @@ class UserLoginForm(FlaskForm):
 class FishingLocationForm(FlaskForm):
     name = StringField('Name', validators= [DataRequired(), Length(min=1, max=50)])
     description = TextAreaField('Description', validators=[DataRequired()])
-    google_map_pin = StringField('Google Map Pin', validators=[DataRequired()])
     latitude = HiddenField('Latitude', validators=[DataRequired()])
     longitude = HiddenField('Longitude', validators=[DataRequired()])
     submit_button = SubmitField()

@@ -16,7 +16,8 @@ def token_required(our_flask_function):
             return jsonify({'message': 'Token is missing.'}), 401
 
         try:
-            current_user_token = User.query.filter_by(token = token).first()
+            current_user_token = User.query.filter_by(id_token=token).first()
+
             print(token)
             print(current_user_token)
         except:
@@ -32,4 +33,4 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, decimal.Decimal):
             #Convert decimal instances into strings
             return str(obj)
-        return super(JSONEncoder,self).default(obj)
+        return super().default(obj)

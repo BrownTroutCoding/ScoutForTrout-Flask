@@ -26,35 +26,24 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.String, primary_key=True)
-    first_name = db.Column(db.String(150), nullable=True, default='')
-    last_name = db.Column(db.String(150), nullable=True, default='')
     email = db.Column(db.String(150), nullable=False)
-    password = db.Column(db.String,nullable=True, default='')
-    g_auth_verify = db.Column(db.Boolean, default=False)
-    token = db.Column(db.String, default='', unique=True)
+    password = db.Column(db.String, nullable=True, default='')
+    id_token = db.Column(db.String, nullable=False, unique=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    def __init__(self, email, first_name='',last_name='', password='', token='', g_auth_verify=False):
-        self.id = self.set_id()
-        self.first_name = first_name
-        self.last_name = last_name
-        self.password = self.set_password(password)
+    def __init__(self, email, password='', id_token=''):
+        self.id = str(uuid.uuid4())
         self.email = email
-        self.token = self.set_token(24)
-        self.g_auth_verify = g_auth_verify
-
-    def set_token(self, length):
-        return secrets.token_hex(length)
-
-    def set_id(self):
-        return str(uuid.uuid4())
+        self.set_password(password)
+        self.id_token = id_token
 
     def set_password(self, password):
-        self.pw_hash = generate_password_hash(password)
-        return self.pw_hash
-    
+        self.password = generate_password_hash(password)
+        return self.password
+
     def __repr__(self):
         return f'User {self.email} has been added to the database'
+
     
 class FishingLocation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -62,7 +51,7 @@ class FishingLocation(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     description = db.Column(db.Text)
-    user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable=False)
+    user_token = db.Column(db.String, db.ForeignKey('user.id_token'), nullable=False)
 
     def __init__(self, id, name, latitude, longitude, description, user_token):
         self.id = id

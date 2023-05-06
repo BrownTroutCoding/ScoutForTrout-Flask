@@ -8,12 +8,9 @@ from helpers import JSONEncoder
 from .site.routes import site
 from .authentication.routes import auth
 from .api.routes import api
-import os
 
-# create flask app
 app = Flask(__name__)
-# CORS is security, helps prevent cross-site-request-forgery
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/signup": {"origins": "*"}})
 
 # google maps
 # app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY')
