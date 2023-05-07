@@ -10,7 +10,8 @@ from .authentication.routes import auth
 from .api.routes import api
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}, r"/signup": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}, r"/signup": {"origins": "http://localhost:5173"}})
+
 
 # google maps
 # app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY')
