@@ -26,20 +26,18 @@ def add_fishing_location(current_user_token):
     latitude = data['latitude']
     longitude = data['longitude']
     description = data['description']
-    # google_map_pin = data['google_map_pin']
-    user_token = current_user_token.token
+    user_id = current_user_token.id
 
     # Check if id is already in database
     fishing_location = FishingLocation.query.get(id)
     if fishing_location is None:
-        fishing_location = FishingLocation(id=id, name=name, latitude=latitude, longitude=longitude, description=description, user_token=user_token)
+        fishing_location = FishingLocation(id=id, name=name, latitude=latitude, longitude=longitude, description=description, user_id=user_id)
     else:
         fishing_location.name = name
         fishing_location.latitude = latitude
         fishing_location.longitude = longitude
-        # fishing_location.google_map_pin = google_map_pin
         fishing_location.description = description
-        fishing_location.user_token = current_user_token.token
+        fishing_location.user_id = user_id
 
     db.session.add(fishing_location)
     db.session.commit()
@@ -51,11 +49,11 @@ def add_fishing_location(current_user_token):
 @api.route('/fishing_locations',methods=['GET'])
 @token_required
 def get_all_locations(current_user_token):
-    a_user = current_user_token.token
-    get_all_locations = FishingLocation.query.filter_by(user_token = a_user).all()
+    user_id = current_user_token.id
+    get_all_locations = FishingLocation.query.filter_by(user_id=user_id).all()
     response = jsonify(fishing_location_schema.dump(get_all_locations))
     return jsonify(response)
-
+    
 # Retrieve single fishing_location
 @api.route('/fishing_location/<id>',methods=['GET'])
 @token_required
@@ -77,13 +75,13 @@ def update_fishing_location(current_user_token, id):
     fishing_location.name = data['name']
     fishing_location.latitude = data['latitude']
     fishing_location.longitude = data['longitude']
-    # fishing_location.google_map_pin = data['google_map_pin']
     fishing_location.description = data['description']
-    fishing_location.user_token = current_user_token.token
+    fishing_location.user_id = current_user_token.id
 
     db.session.commit()
     response = fishing_location_schema.dump(fishing_location)
     return jsonify(response)
+
 
 #Delete fishing_location
 @api.route('/fishing_locations/<id>',methods=["DELETE"])
