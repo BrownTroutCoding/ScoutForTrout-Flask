@@ -28,14 +28,12 @@ class User(db.Model, UserMixin):
     id = db.Column(db.String, primary_key=True)
     email = db.Column(db.String(150), nullable=False)
     password = db.Column(db.String, nullable=True, default='')
-    id_token = db.Column(db.String, nullable=False, unique=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    def __init__(self, email, password='', id_token=''):
+    def __init__(self, email, password=''):
         self.id = str(uuid.uuid4())
         self.email = email
         self.set_password(password)
-        self.id_token = id_token
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -44,6 +42,7 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'User {self.email} has been added to the database'
 
+
     
 class FishingLocation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -51,22 +50,22 @@ class FishingLocation(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     description = db.Column(db.Text)
-    user_token = db.Column(db.String, db.ForeignKey('user.id_token'), nullable=False)
+    user_id = db.Column(db.String, db.ForeignKey('user.id'), nullable=False)
 
-    def __init__(self, id, name, latitude, longitude, description, user_token):
+    def __init__(self, id, name, latitude, longitude, description, user_id):
         self.id = id
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.description = description
-        self.user_token = user_token
+        self.user_id = user_id
 
     def __repr__(self):
         return f'The following fishing location has been added to the inventory: {self.name}.'
 
 class FishingLocationSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'name', 'latitude', 'longitude', 'description', 'user_token']
+        fields = ['id', 'name', 'latitude', 'longitude', 'description', 'user_id']
 
 fishing_location_schema = FishingLocationSchema()
 all_locations_schema = FishingLocationSchema(many=True)
