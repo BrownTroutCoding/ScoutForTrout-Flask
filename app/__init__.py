@@ -16,15 +16,12 @@ CORS(app, resources={
         "origins": "*",
         "allow_headers": ["Content-Type", "Authorization"]
     },
-    r"/auth/userdata": {
+    r"/auth/userdata/*": {  # Update the route pattern to include the dynamic user_id parameter
         "origins": "*",
         "allow_headers": ["Content-Type", "Authorization"]
     }
 }, supports_credentials=True)
 
-
-# google maps
-# app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY')
 
 # routes
 app.register_blueprint(site)

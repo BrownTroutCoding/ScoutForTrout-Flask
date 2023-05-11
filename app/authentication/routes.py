@@ -9,7 +9,7 @@ from helpers import token_required
 from flask import make_response
 
 auth = Blueprint('auth', __name__, template_folder='auth_templates', url_prefix='/auth')
-CORS(auth)
+CORS(auth, resources={r"/*": {"origins": "*"}})
 
 
 # Fetch Google public keys
@@ -40,31 +40,36 @@ def get_token():
 
     except ValueError as e:
         return jsonify({'message': str(e)}), 401
+    
+def load_user(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        else:
+            return jsonify({'message': 'Token is missing or malformed'}), 401
 
-def load_user(token):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            user = User.query.filter_by(token=token).first()
-            if not user:
-                return jsonify({'message': 'User not found'}), 404
-            g.current_user = user
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
+        user = User.query.filter_by(token=token).first()
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        g.current_user = user
+        return f(*args, **kwargs)
+    return decorated_function
 
-@auth.route('/userdata', methods=['GET'])
-@token_required
-def get_user_data(current_user_token):
+
+
+@auth.route('/userdata/<string:user_id>', methods=['GET'])
+@load_user
+def get_user_data():
     user_data = {
-        "id": current_user_token.id,
-        "token": current_user_token.token,
+        "id": g.current_user.id,
+        "token": g.current_user.token,
     }
     response = make_response(jsonify(user_data), 200)
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     return response
-
 
 
 @auth.route('/signup', methods=['GET', 'POST'])
@@ -98,7 +103,7 @@ def signup():
         # Check if user already exists
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            response = jsonify({'message': 'User already exists', 'token': existing_user.token})
+            response = jsonify({'message': 'User already exists', 'token': existing_user.token, 'id': existing_user.id})
             return response, 409
 
         # Create new user and save ID token
@@ -110,8 +115,8 @@ def signup():
         return response, 201
 
 
-# simulate login route
-@auth.route('/simulate-login')
-def simulate_login():
-    return render_template('simulate_login.html')
+# # simulate login route
+# @auth.route('/simulate-login')
+# def simulate_login():
+#     return render_template('simulate_login.html')
 
