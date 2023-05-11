@@ -11,17 +11,7 @@ from .api.routes import api
 
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/api/*": {
-        "origins": "*",
-        "allow_headers": ["Content-Type", "Authorization"]
-    },
-    r"/auth/userdata/*": {  # Update the route pattern to include the dynamic user_id parameter
-        "origins": "*",
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-}, supports_credentials=True)
-
+CORS(app)
 
 # routes
 app.register_blueprint(site)

@@ -4,13 +4,13 @@ from models import db, User, FishingLocation, fishing_location_schema, all_locat
 from .cfs import get_and_groom_cfs
 from .temperature import get_and_groom_temp
 # from models import GoogleMapPin, google_map_pin_schema, GoogleMapPinSchema
-from flask import g
+from flask import g, Flask
 from ..authentication.routes import load_user
 from flask_cors import CORS
+from flask_login import current_user
 
 
 api = Blueprint('api',__name__,url_prefix='/api')
-CORS(api, resources={r"/*": {"origins": "*"}})
 
 # Get Data
 @api.route('/getdata')
@@ -18,7 +18,7 @@ def getdata():
     return {'yee': 'haw'}
 
 # Create
-@api.route('/fishinglocations',methods=['POST'])
+@api.route('/fishinglocations/<string:user_id>',methods=['POST'])
 @load_user
 def add_fishing_location():
     print(request.headers)
@@ -52,25 +52,24 @@ def add_fishing_location():
     response = fishing_location_schema.dump(fishing_location)
     return jsonify(response), 201, {'Content-Type': 'application/json'}
 
-#Retrieve fishing_locations
-@api.route('/fishinglocations', methods=['GET'])
+@api.route('/fishinglocations/<string:user_id>', methods=['GET'])
 @load_user
-def get_all_locations():
+def get_all_locations(user_id):
     user_id = g.current_user.id
     get_all_locations = FishingLocation.query.filter_by(user_id=user_id).all()
     response = all_locations_schema.dump(get_all_locations)
     return jsonify(response)
     
 # Retrieve single fishing_location
-@api.route('/fishing_location/<id>',methods=['GET'])
-@load_user
+@api.route('/fishing_location/<string:user_id>',methods=['GET'])
+# @load_user
 def get_fishing_location(id):
     fishing_location = FishingLocation.query.get(id)
     response = fishing_location_schema.dump(fishing_location)
     return jsonify(response)
 
 #Update fishing_location
-@api.route('/fishing_locations/<id>',methods=["POST", "PUT"])
+@api.route('/fishing_locations/<string:user_id>',methods=["POST", "PUT"])
 @load_user
 def update_fishing_location(id):
     if request.content_type != 'application/json':
@@ -91,7 +90,7 @@ def update_fishing_location(id):
 
 
 #Delete fishing_location
-@api.route('/fishing_locations/<id>',methods=["DELETE"])
+@api.route('/fishing_locations/<string:user_id>',methods=["DELETE"])
 @load_user
 def delete_fishing_location(id):
     fishing_location = FishingLocation.query.get(id)
