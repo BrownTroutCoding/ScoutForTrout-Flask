@@ -20,7 +20,7 @@ def getdata():
 # Create
 @api.route('/fishinglocations/<string:user_id>',methods=['POST'])
 @load_user
-def add_fishing_location():
+def add_fishing_location(user_id):
     print(request.headers)
     print(request.get_json())
     data = request.get_json()
@@ -33,7 +33,6 @@ def add_fishing_location():
     latitude = data['latitude']
     longitude = data['longitude']
     description = data['description']
-    user_id = g.current_user.id
 
     # Check if id is already in database
     fishing_location = FishingLocation.query.get(id)
@@ -52,13 +51,16 @@ def add_fishing_location():
     response = fishing_location_schema.dump(fishing_location)
     return jsonify(response), 201, {'Content-Type': 'application/json'}
 
+
 @api.route('/fishinglocations/<string:user_id>', methods=['GET'])
 @load_user
 def get_all_locations(user_id):
-    user_id = g.current_user.id
+    print(f"User ID: {user_id}")  # Add this line to debug
     get_all_locations = FishingLocation.query.filter_by(user_id=user_id).all()
     response = all_locations_schema.dump(get_all_locations)
     return jsonify(response)
+
+
     
 # Retrieve single fishing_location
 @api.route('/fishing_location/<string:user_id>',methods=['GET'])
