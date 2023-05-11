@@ -8,25 +8,19 @@ def token_required(our_flask_function):
     @wraps(our_flask_function)
     def decorated(*args, **kwargs):
         token = None
-        current_user_token = None
-
         if 'Authorization' in request.headers:
-            token = request.headers['Authorization'].split(' ')[1]
+            token = request.headers['Authorization']
         if not token:
-            return jsonify({'message': 'Token is missing.'}), 401
-
-        try:
-            current_user_token = User.query.filter_by(id_token=token).first()
-
-            print(token)
-            print(current_user_token)
-        except:
-            owner=User.query.filter_by(token=token).first()
-
-            if token != owner.token and secrets.compare_digest(token, owner.token):
-                return jsonify({'message': 'Token is invalid'})
+            return jsonify({'message': 'Token is missing!'}), 403
+        
+        current_user_token = User.query.filter_by(token=token).first()
+        
+        if current_user_token is None:
+            return jsonify({'message': 'Invalid token'}), 401
+        
         return our_flask_function(current_user_token, *args, **kwargs)
     return decorated
+
 
 
 class JSONEncoder(json.JSONEncoder):

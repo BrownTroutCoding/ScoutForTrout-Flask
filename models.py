@@ -27,20 +27,25 @@ def load_user(user_id):
 class User(db.Model, UserMixin):
     id = db.Column(db.String, primary_key=True)
     email = db.Column(db.String(150), nullable=False)
-    password = db.Column(db.String, nullable=True, default='')
+    g_auth_verify = db.Column(db.Boolean, default=False)
+    token = db.Column(db.String, default='', unique=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    def __init__(self, email, password=''):
-        self.id = str(uuid.uuid4())
+    def __init__(self, email, g_auth_verify=False):
+        self.id = self.set_id()
         self.email = email
-        self.set_password(password)
+        self.token = self.set_token(24)
+        self.g_auth_verify = g_auth_verify
 
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-        return self.password
+    def set_token(self, length):
+        return secrets.token_hex(length)
+
+    def set_id(self):
+        return str(uuid.uuid4())
 
     def __repr__(self):
         return f'User {self.email} has been added to the database'
+
 
 
     
@@ -53,7 +58,7 @@ class FishingLocation(db.Model):
     user_id = db.Column(db.String, db.ForeignKey('user.id'), nullable=False)
 
     def __init__(self, id, name, latitude, longitude, description, user_id):
-        self.id = id
+        self.id = id or str(uuid.uuid4())
         self.name = name
         self.latitude = latitude
         self.longitude = longitude

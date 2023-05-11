@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -9,9 +9,19 @@ from .site.routes import site
 from .authentication.routes import auth
 from .api.routes import api
 
+
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "https://scoutfortrout.com"]},
-                     r"/signup": {"origins": ["http://localhost:5173", "https://scoutfortrout.com"]}})
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "allow_headers": ["Content-Type", "Authorization"]
+    },
+    r"/auth/userdata": {
+        "origins": "*",
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+}, supports_credentials=True)
+
 
 # google maps
 # app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY')
