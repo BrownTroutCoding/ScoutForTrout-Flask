@@ -73,13 +73,13 @@ def get_fishing_location(id):
 #Update fishing_location
 @api.route('/fishing_locations/<string:user_id>',methods=["POST", "PUT"])
 @load_user
-def update_fishing_location(id):
+def update_fishing_location(user_id):
     if request.content_type != 'application/json':
         return jsonify({'error': 'Invalid content type'}), 400
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Invalid JSON'}), 400
-    fishing_location = FishingLocation.query.get(id)
+    fishing_location = FishingLocation.query.get(user_id)
     fishing_location.name = data['name']
     fishing_location.latitude = data['latitude']
     fishing_location.longitude = data['longitude']
@@ -92,15 +92,16 @@ def update_fishing_location(id):
 
 
 #Delete fishing_location
-@api.route('/fishing_locations/<string:user_id>',methods=["DELETE"])
+@api.route('/fishing_locations/<string:user_id>', methods=["DELETE"])
 @load_user
-def delete_fishing_location(id):
-    fishing_location = FishingLocation.query.get(id)
+def delete_fishing_location(user_id):
+    fishing_location = FishingLocation.query.get(user_id)
     db.session.delete(fishing_location)
     db.session.commit()
 
     response = fishing_location_schema.dump(fishing_location)
     return jsonify(response)
+
 
 @api.route('/cfs/<river_name>')
 def get_cfs(river_name):
