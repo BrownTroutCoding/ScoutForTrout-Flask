@@ -79,7 +79,7 @@ def update_fishing_location(user_id):
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Invalid JSON'}), 400
-    fishing_location = FishingLocation.query.get(user_id)
+    fishing_location = FishingLocation.query.get(id)
     fishing_location.name = data['name']
     fishing_location.latitude = data['latitude']
     fishing_location.longitude = data['longitude']
@@ -92,15 +92,17 @@ def update_fishing_location(user_id):
 
 
 #Delete fishing_location
-@api.route('/fishing_locations/<string:user_id>', methods=["DELETE"])
+@api.route('/fishing_locations/<string:id>', methods=["DELETE"])
 @load_user
-def delete_fishing_location(user_id):
-    fishing_location = FishingLocation.query.get(user_id)
-    db.session.delete(fishing_location)
-    db.session.commit()
-
-    response = fishing_location_schema.dump(fishing_location)
-    return jsonify(response)
+def delete_fishing_location(user_id, id):
+    fishing_location = FishingLocation.query.get(id)
+    if fishing_location and fishing_location.user_id == user_id:
+        db.session.delete(fishing_location)
+        db.session.commit()
+        response = fishing_location_schema.dump(fishing_location)
+        return jsonify(response)
+    else:
+        return jsonify({"message": "Fishing location not found or not authorized to delete"}), 404
 
 
 @api.route('/cfs/<river_name>')

@@ -15,6 +15,24 @@ auth = Blueprint('auth', __name__, template_folder='auth_templates', url_prefix=
 response = requests.get('https://www.googleapis.com/oauth2/v3/certs')
 public_keys = response.json()
 
+
+# protects routes in the app by checking the validity of an authentication token
+def load_user(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        else:
+            return jsonify({'message': 'Token is missing'}), 401
+
+        user = User.query.filter_by(token=token).first()
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        g.current_user = user
+        return f(*args, **kwargs)
+    return decorated_function
+
 # verifies the provided Firebase ID token, extracts the user's email from the token,
 #  checks if the user exists in the database, and if so,
 #  returns a JSON response with the user's token
@@ -42,24 +60,6 @@ def get_token():
 
     except ValueError as e:
         return jsonify({'message': str(e)}), 401
-    
-
-# protects routes in the app by checking the validity of an authentication token
-def load_user(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            token = auth_header[7:]
-        else:
-            return jsonify({'message': 'Token is missing'}), 401
-
-        user = User.query.filter_by(token=token).first()
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
-        g.current_user = user
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 #  retrieves the user's data (specifically the user's ID and token) from the g.current_user object.
