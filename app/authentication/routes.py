@@ -16,7 +16,7 @@ response = requests.get('https://www.googleapis.com/oauth2/v3/certs')
 public_keys = response.json()
 
 
-# protects routes in the app by checking the validity of an authentication token
+# Protects routes in the app by checking the validity of an authentication token
 def load_user(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -29,9 +29,12 @@ def load_user(f):
         user = User.query.filter_by(token=token).first()
         if not user:
             return jsonify({'message': 'User not found'}), 404
-        g.current_user = user
+
+        g.current_user = user  # Set the current_user attribute in the g object
         return f(*args, **kwargs)
+
     return decorated_function
+
 
 # verifies the provided Firebase ID token, extracts the user's email from the token,
 #  checks if the user exists in the database, and if so,

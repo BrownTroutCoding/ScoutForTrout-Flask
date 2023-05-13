@@ -11,7 +11,8 @@ from .api.routes import api
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 
 # routes
 app.register_blueprint(site)

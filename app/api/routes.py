@@ -91,12 +91,13 @@ def update_fishing_location(user_id):
     return jsonify(response)
 
 
-#Delete fishing_location
+# Delete fishing_location
 @api.route('/fishing_locations/<string:id>', methods=["DELETE"])
 @load_user
-def delete_fishing_location(user_id, id):
-    fishing_location = FishingLocation.query.get(id)
-    if fishing_location and fishing_location.user_id == user_id:
+def delete_fishing_location(id):
+    user_id = g.current_user.id
+    fishing_location = FishingLocation.query.filter_by(id=id, user_id=user_id).first()
+    if fishing_location:
         db.session.delete(fishing_location)
         db.session.commit()
         response = fishing_location_schema.dump(fishing_location)
