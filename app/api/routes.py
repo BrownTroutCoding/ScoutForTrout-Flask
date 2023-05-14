@@ -63,7 +63,7 @@ def get_all_locations(user_id):
 
     
 # Retrieve single fishing_location
-@api.route('/fishing_location/<string:user_id>',methods=['GET'])
+@api.route('/fishinglocations/<string:user_id>',methods=['GET'])
 # @load_user
 def get_fishing_location(id):
     fishing_location = FishingLocation.query.get(id)
@@ -71,28 +71,31 @@ def get_fishing_location(id):
     return jsonify(response)
 
 #Update fishing_location
-@api.route('/fishing_locations/<string:user_id>',methods=["POST", "PUT"])
+@api.route('/fishinglocations/<string:locationId>', methods=['PUT'])
 @load_user
-def update_fishing_location(user_id):
+def update_fishing_location(locationId):
     if request.content_type != 'application/json':
         return jsonify({'error': 'Invalid content type'}), 400
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Invalid JSON'}), 400
-    fishing_location = FishingLocation.query.get(id)
-    fishing_location.name = data['name']
-    fishing_location.latitude = data['latitude']
-    fishing_location.longitude = data['longitude']
-    fishing_location.description = data['description']
-    fishing_location.user_id = g.current_user.id
+    fishing_location = FishingLocation.query.get(locationId)
+    if fishing_location is None:
+        return jsonify({'error': 'Fishing location not found'}), 404
+    else:
+        fishing_location.name = data['name']
+        fishing_location.latitude = data['latitude']
+        fishing_location.longitude = data['longitude']
+        fishing_location.description = data['description']
+        fishing_location.user_id = g.current_user.id
 
-    db.session.commit()
-    response = fishing_location_schema.dump(fishing_location)
-    return jsonify(response)
+        db.session.commit()
+        response = fishing_location_schema.dump(fishing_location)
+        return jsonify(response), 200, {'Content-Type': 'application/json'}
 
 
 # Delete fishing_location
-@api.route('/fishing_locations/<string:id>', methods=["DELETE"])
+@api.route('/fishinglocations/<string:id>', methods=["DELETE"])
 @load_user
 def delete_fishing_location(id):
     user_id = g.current_user.id
