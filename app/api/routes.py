@@ -108,7 +108,6 @@ def delete_fishing_location(id):
     else:
         return jsonify({"message": "Fishing location not found or not authorized to delete"}), 404
 
-
 @api.route('/cfs/<river_name>')
 def get_cfs(river_name):
     cfs_data = get_and_groom_cfs(river_name)
