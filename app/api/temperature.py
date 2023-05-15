@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+import math
 
 def get_and_groom_temp(river_name):
     print("Now grabbing data from river: %s" % river_name)
@@ -46,7 +47,14 @@ def get_and_groom_temp(river_name):
     print(f"Date and Time: " + TempDateTime)
     TempValue = data["value"]["timeSeries"][0]["values"][0]["value"][0]["value"]
     # converting from Celsius to Fahrenheit
-    TempValue = str((float(TempValue) * 1.8) + 32)
+    TempValue = (float(TempValue) * 1.8) + 32
+    TempValue = str(math.floor(TempValue))
     print(f"Temperature: " + TempValue + " F")
 
-# get_and_groom_temp("missouri")
+    return {
+        "river": river_name.capitalize(),
+        "date_and_time": TempDateTime,
+        "temp": TempValue,
+    }
+
+get_and_groom_temp("yellowstone")

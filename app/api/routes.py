@@ -13,9 +13,9 @@ from flask_login import current_user
 api = Blueprint('api',__name__,url_prefix='/api')
 
 # Get Data
-@api.route('/getdata')
-def getdata():
-    return {'yee': 'haw'}
+# @api.route('/getdata')
+# def getdata():
+#     return {'yee': 'haw'}
 
 # Create
 @api.route('/fishinglocations/<string:user_id>',methods=['POST'])
@@ -108,24 +108,12 @@ def delete_fishing_location(id):
     else:
         return jsonify({"message": "Fishing location not found or not authorized to delete"}), 404
 
-@api.route('/cfs/<river_name>')
+@api.route('/cfs/<river_name>', methods=['GET'])
 def get_cfs(river_name):
     cfs_data = get_and_groom_cfs(river_name)
     return jsonify(cfs_data)
 
-@api.route('/temperature/<river_name>')
+@api.route('/temp/<river_name>', methods=['GET'])
 def get_temp(river_name):
     temp_data = get_and_groom_temp(river_name)
     return jsonify(temp_data)
-
-# @api.route('/google_map_pin', methods=['POST'])
-# def add_google_map_pin():
-#     data = request.get_json()
-#     user_token = data['user_token']
-#     fishing_location_id = data['fishing_location_id']
-#     latitude = data['latitude']
-#     longitude = data['longitude']
-#     new_pin = GoogleMapPin(user_token=user_token, fishing_location_id=fishing_location_id, latitude=latitude, longitude=longitude)
-#     db.session.add(new_pin)
-#     db.session.commit()
-#     return google_map_pin_schema.jsonify(new_pin)

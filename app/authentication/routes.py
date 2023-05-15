@@ -126,10 +126,3 @@ def signup():
 
         response = jsonify({'message': 'User created successfully', 'id': user.id, 'token': user.token})
         return response, 201
-
-
-# # simulate login route
-# @auth.route('/simulate-login')
-# def simulate_login():
-#     return render_template('simulate_login.html')
-

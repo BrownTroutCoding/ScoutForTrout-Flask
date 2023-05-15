@@ -49,4 +49,10 @@ def get_and_groom_cfs(river_name):
     CFSValue = data["value"]["timeSeries"][0]["values"][0]["value"][0]["value"]
     print(f"CFS: " + CFSValue)
 
+    return {
+        "river": river_name.capitalize(),
+        "date_and_time": CFSDateTime,
+        "cfs": CFSValue,
+    }
+
 # get_and_groom_cfs("gallatin")
