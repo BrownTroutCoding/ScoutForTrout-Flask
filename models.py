@@ -46,9 +46,6 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'User {self.email} has been added to the database'
 
-
-
-    
 class FishingLocation(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(50))
