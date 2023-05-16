@@ -11,8 +11,7 @@ from .api.routes import api
 
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}})
-
+CORS(app)
 
 
 # routes
